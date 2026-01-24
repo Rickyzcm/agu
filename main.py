@@ -3,31 +3,33 @@ from datetime import datetime
 import baostock as bs
 from openpyxl import load_workbook
 import threading
-import time
+import config
+
 
 ## 股票信息的设计
 class Stock:
-    def __init__(self,code,name,sheet_name,start_date,end_date):
+    def __init__(self, code: str, name: str, start_date: str, end_date: str):
         self.code = code
         self.name = name
-        self.sheet_name = sheet_name
+        self.sheet_name = f'{self.name}历史K线数据'  ## 生成每个股票对应历史K线数据的工作表表名
         self.start_date = start_date
-        self.end_date =end_date
-        self.data_list=[]
+        self.end_date = end_date
 
-    def set_sheet_name(self,sheet_name):
+    def set_sheet_name(self, sheet_name: str):
         self.sheet_name = sheet_name
 
-    def set_data_list(self,data_list):
-        self.data_list = data_list ## 某一个gu历史K线数据的集合
+    def set_rs(self, fields, data_list: []):
+        self.fields = fields  # 列名
+        self.data_list = data_list  ## 某一个gu历史K线数据的集合
+
 
 def query_to_map_list(
-        code_map,
-        ):
+        code_map: dict,
+):
     lock = threading.Lock()
     for key, value in code_map.items():
         with lock:
-            print(f"从'{value.start_date}'开始,到'{value.end_date}'为止")
+            print(f"查询'{value.name}'从'{value.start_date}'开始,到'{value.end_date}'为止")
 
             rs = bs.query_history_k_data_plus(key,
                                               "date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,isST",
@@ -53,9 +55,14 @@ def query_to_map_list(
             #     result.to_excel(writer, sheet_name=sheet_name, index=False,
             #                     startrow=writer.sheets[sheet_name].max_row)
             # print(result)
-            value.set_data_list(data_list)
+            value.set_rs(fields=rs.fields, data_list=data_list)
+
+
 ## 将日k线数据追加到制定工作表中（）
-def append_to_multiple_sheets_and_save_as_copy(original_file_path, new_file_path, code_map):
+def append_to_multiple_sheets_and_save_as_copy(
+        original_file_path: str,
+        new_file_path: str,
+        code_map):
     """
         打开指定Excel文件，追加数据后另存为新文件。
 
@@ -73,18 +80,42 @@ def append_to_multiple_sheets_and_save_as_copy(original_file_path, new_file_path
         if value.sheet_name in wb.sheetnames:
             ws = wb[value.sheet_name]
             print(f"正在向工作表 '{value.sheet_name}' 追加数据...")
-
-            # 将数据行逐条追加到该工作表的末尾
-            for row in value.data_list:
-                ws.append(row)
-            print(f"  已追加 {len(value.data_list)} 行数据。")
         else:
-            print(f"警告: 工作簿中不存在名为 '{value.sheet_name}' 的工作表，已跳过。")
+            print(f"警告: 工作簿中不存在名为 '{value.sheet_name}' 的工作表，将新建工作表。")
+            ws = wb.create_sheet(title=value.sheet_name)
+            # 第一行写列名
+            ws.append(value.fields)
+        # 将数据行逐条追加到该工作表的末尾
+        for row in value.data_list:
+            ws.append(row)
+        print(f"  已追加 {len(value.data_list)} 行数据。")
 
     # 3. 所有数据追加完成后，统一保存到新文件（生成副本）
     wb.save(new_file_path)
     print(f"\n所有数据已追加完成，并保存为新文件: {new_file_path}")
 
+
+# 主程序开始
+## 读取本地配置、
+
+original_file_path = config.__get_original_file_path__()
+new_file_path = config.__get_new_file_path__()
+
+## 获取当前最新日期
+end_date = datetime.today().strftime("%Y-%m-%d")
+gu_list = [
+    Stock('sh.603078', '江化微', '2026-01-17', end_date),
+    Stock('sz.000555', '精工科技', '2025-01-01', end_date),
+    Stock('sh.601127', '赛力斯', '2026-01-17', end_date),
+    Stock('sz.000977', '浪潮信息', '2026-01-17', end_date),
+    Stock('sz.002065', '东华软件', '2025-01-01', end_date)
+]
+
+#### 获取沪深A股历史K线数据 ####
+# 详细指标参数，参见“历史行情指标参数”章节；“分钟线”参数与“日线”参数不同。“分钟线”不包含指数。
+# 分钟线指标：date,time,code,open,high,low,close,volume,amount,adjustflag
+# 周月线指标：date,code,open,high,low,close,volume,amount,adjustflag,turn,pctChg
+codeMap = {gu.code: gu for gu in gu_list}
 
 #### 登陆系统 ####
 lg = bs.login()
@@ -92,30 +123,9 @@ lg = bs.login()
 print('login respond error_code:' + lg.error_code)
 print('login respond  error_msg:' + lg.error_msg)
 
-## 修改的源excel文件
-original_file_path='/Users/hyperchain/Documents/个人持仓情况.xlsx'
-new_file_path='/Users/hyperchain/Documents/个人持仓情况'+str(time.time())+'.xlsx'
-## 获取当前最新日期
-end_date = datetime.today().strftime( "%Y-%m-%d")
-gu_list = [
-    Stock('sh.603078','江化微','','2026-01-21',end_date),
-    Stock('sz.000555','精工科技','','2026-01-21',end_date),
-    Stock('sh.601127','赛力斯','','2026-01-21',end_date),
-    Stock('sz.000977','浪潮信息','','2026-01-21',end_date),
-    Stock('sz.002065','东华软件','','2025-01-01',end_date)
-]
-## 生成每个股票对应历史K线数据的工作表表名
-for gu in gu_list:
-    gu.set_sheet_name(gu.name+'历史K线数据') # 生成规则：拼接
-
-#### 获取沪深A股历史K线数据 ####
-# 详细指标参数，参见“历史行情指标参数”章节；“分钟线”参数与“日线”参数不同。“分钟线”不包含指数。
-# 分钟线指标：date,time,code,open,high,low,close,volume,amount,adjustflag
-# 周月线指标：date,code,open,high,low,close,volume,amount,adjustflag,turn,pctChg
-codeMap = {gu.code:gu for gu in gu_list}
-
 # 调用函数
 query_to_map_list(codeMap)
-append_to_multiple_sheets_and_save_as_copy(original_file_path,new_file_path,codeMap)
 #### 登出系统 ####
 bs.logout()
+## 数据处理进文件
+append_to_multiple_sheets_and_save_as_copy(original_file_path, new_file_path, codeMap)
