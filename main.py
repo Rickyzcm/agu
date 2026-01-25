@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import baostock as bs
 from openpyxl import load_workbook
@@ -6,14 +6,16 @@ import threading
 import config
 
 
-## 股票信息的设计
+## 股票信息的数据对象设计
 class Stock:
+
     def __init__(self, code: str, name: str, start_date: str, end_date: str):
         self.code = code
         self.name = name
         self.sheet_name = f'{self.name}历史K线数据'  ## 生成每个股票对应历史K线数据的工作表表名
         self.start_date = start_date
         self.end_date = end_date
+
 
     def set_sheet_name(self, sheet_name: str):
         self.sheet_name = sheet_name
@@ -22,6 +24,39 @@ class Stock:
         self.fields = fields  # 列名
         self.data_list = data_list  ## 某一个gu历史K线数据的集合
 
+## 读取excel文档并将最新数据日期+1成为查询标的的开始日期（一般放在查询数据前准备阶段执行）
+def query_data_latest_date(
+        code_map: dict,
+        original_file_path: str,
+        end_date: str):
+    # 1. 加载原始工作簿
+    wb = load_workbook(original_file_path)
+
+    # 2. 遍历字典，向每个指定工作表追加数据：只会遍历查询目标股票的工作表，也就意味着不会访问非K线工作表
+    for key, value in code_map.items():
+        # 检查工作表是否存在
+        if value.sheet_name in wb.sheetnames:
+            ws = wb[value.sheet_name]
+            last_row = ws.max_row
+            last_date = None
+            try:
+                # 若工作表存在且有数据
+                if last_row > 1:
+                    last_date = ws.cell(row=last_row, column=1).value
+                    date_obj= None
+                    # 取第一列数据内容，格式“”
+                    if isinstance(last_date,datetime):
+                        date_obj = last_date
+                    elif isinstance(last_date,str):
+                        date_obj = datetime.strptime(last_date, '%Y-%m-%d') # 解析成 datetime对象
+                    next_day = date_obj + timedelta(days=1) # +1成第二天日期
+                    value.start_date=next_day.strftime('%Y-%m-%d') # 该标的取值开始日期为最新数据的第二天
+                    value.end_date=end_date # 该标的取值截止日期为输入的日期，一般就是执行程序时的系统日期
+            except ValueError:
+                print(f'{value.sheet_name}中行数为{last_row},第一个单元格的内容为{last_date}')
+        else:
+            value.start_date =config.__get_primary_data_start_date__()
+            value.end_date = end_date
 
 def query_to_map_list(
         code_map: dict,
@@ -44,19 +79,7 @@ def query_to_map_list(
                 # 获取一条记录，将记录合并在一起
                 data_list.append(rs.get_row_data())
             # result = pd.DataFrame(data_list, columns=rs.fields)
-
-            #### 结果集输出到csv文件 ####
-            # result.to_csv(
-            #     "/Users/hyperchain/Documents/out/history_A_stock_k_data" + value.name + "_" + value.start_date + "~" + value.end_date + ".csv",
-            #     index=False)
-
-            ### 修改结果集输出到指定文件的指定工作表中
-            # with pd.ExcelWriter('existing.xlsx', engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
-            #     result.to_excel(writer, sheet_name=sheet_name, index=False,
-            #                     startrow=writer.sheets[sheet_name].max_row)
-            # print(result)
             value.set_rs(fields=rs.fields, data_list=data_list)
-
 
 ## 将日k线数据追加到制定工作表中（）
 def append_to_multiple_sheets_and_save_as_copy(
@@ -96,27 +119,28 @@ def append_to_multiple_sheets_and_save_as_copy(
 
 
 # 主程序开始
-## 读取本地配置、
-
+## 读取本地配置
 original_file_path = config.__get_original_file_path__()
 new_file_path = config.__get_new_file_path__()
 
 ## 获取当前最新日期
-end_date = datetime.today().strftime("%Y-%m-%d")
+current_date = datetime.today().strftime("%Y-%m-%d")
 gu_list = [
-    Stock('sh.603078', '江化微', '2026-01-17', end_date),
-    Stock('sz.000555', '精工科技', '2025-01-01', end_date),
-    Stock('sh.601127', '赛力斯', '2026-01-17', end_date),
-    Stock('sz.000977', '浪潮信息', '2026-01-17', end_date),
-    Stock('sz.002065', '东华软件', '2025-01-01', end_date)
+    Stock('sh.603078', '江化微', '2026-01-17', end_date=current_date),
+    Stock('sz.000555', '精工科技', '2025-01-01', end_date=current_date),
+    Stock('sh.601127', '赛力斯', '2026-01-17', end_date=current_date),
+    Stock('sz.000977', '浪潮信息', '2026-01-17', end_date=current_date),
+    Stock('sz.002065', '东华软件', '2025-01-01', end_date=current_date),
+    Stock('sz.000555', '神州信息', '2025-01-16', end_date=current_date)
 ]
 
 #### 获取沪深A股历史K线数据 ####
 # 详细指标参数，参见“历史行情指标参数”章节；“分钟线”参数与“日线”参数不同。“分钟线”不包含指数。
 # 分钟线指标：date,time,code,open,high,low,close,volume,amount,adjustflag
 # 周月线指标：date,code,open,high,low,close,volume,amount,adjustflag,turn,pctChg
-codeMap = {gu.code: gu for gu in gu_list}
-
+code_map = {gu.code: gu for gu in gu_list}
+# 预处理一下每个标的查询时间区间（开始时间和结束时间）
+query_data_latest_date(code_map=code_map,original_file_path = original_file_path,end_date=current_date)
 #### 登陆系统 ####
 lg = bs.login()
 # 显示登陆返回信息
@@ -124,8 +148,8 @@ print('login respond error_code:' + lg.error_code)
 print('login respond  error_msg:' + lg.error_msg)
 
 # 调用函数
-query_to_map_list(codeMap)
+query_to_map_list(code_map)
 #### 登出系统 ####
 bs.logout()
 ## 数据处理进文件
-append_to_multiple_sheets_and_save_as_copy(original_file_path, new_file_path, codeMap)
+append_to_multiple_sheets_and_save_as_copy(original_file_path, new_file_path, code_map)

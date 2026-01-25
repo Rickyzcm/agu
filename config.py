@@ -24,6 +24,8 @@ if len(new_file_path)==0:
     raise ValueError("需要在 local_config.ini 文件中配置生成目标excel文件完整路径（包含文件名）  new_file_path ")
 print(new_file_path)
 
+primary_data_start_date=config['history_data']['primary_data_start_date']
+
 
 
 def __get_original_file_path__():
@@ -31,3 +33,6 @@ def __get_original_file_path__():
 
 def __get_new_file_path__():
     return new_file_path
+
+def __get_primary_data_start_date__():
+    return primary_data_start_date
