@@ -126,12 +126,12 @@ new_file_path = config.__get_new_file_path__()
 ## 获取当前最新日期
 current_date = datetime.today().strftime("%Y-%m-%d")
 gu_list = [
-    Stock('sh.603078', '江化微', '2026-01-17', end_date=current_date),
-    Stock('sz.000555', '精工科技', '2025-01-01', end_date=current_date),
-    Stock('sh.601127', '赛力斯', '2026-01-17', end_date=current_date),
-    Stock('sz.000977', '浪潮信息', '2026-01-17', end_date=current_date),
-    Stock('sz.002065', '东华软件', '2025-01-01', end_date=current_date),
-    Stock('sz.000555', '神州信息', '2025-01-16', end_date=current_date)
+    Stock('sz.002181', '粤传媒', '2025-01-01', end_date=current_date),
+    Stock('sz.002905', '金逸影视', '2025-01-01', end_date=current_date),
+    Stock('sh.603212', '赛伍技术', '2026-01-17', end_date=current_date),
+    Stock('sh.600487', '亨通光电', '2026-01-17', end_date=current_date),
+    Stock('sh.603667', '五洲新春', '2025-01-01', end_date=current_date),
+    Stock('sh.603009', '北特科技', '2025-01-01', end_date=current_date)
 ]
 
 #### 获取沪深A股历史K线数据 ####
