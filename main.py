@@ -34,7 +34,7 @@ def query_data_latest_date(
 
     # 2. 遍历字典，向每个指定工作表追加数据：只会遍历查询目标股票的工作表，也就意味着不会访问非K线工作表
     for key, value in code_map.items():
-        # 检查工作表是否存在
+        # 检查股票名称对应的工作表是否存在
         if value.sheet_name in wb.sheetnames:
             ws = wb[value.sheet_name]
             last_row = ws.max_row
@@ -126,8 +126,7 @@ new_file_path = config.__get_new_file_path__()
 ## 获取当前最新日期
 current_date = datetime.today().strftime("%Y-%m-%d")
 gu_list = [
-    Stock('sz.002181', '粤传媒', '2025-01-01', end_date=current_date),
-    Stock('sz.002905', '金逸影视', '2025-01-01', end_date=current_date),
+    Stock('sh.600828', '茂业商业', '2025-01-01', end_date=current_date),
     Stock('sh.603212', '赛伍技术', '2026-01-17', end_date=current_date),
     Stock('sh.600487', '亨通光电', '2026-01-17', end_date=current_date),
     Stock('sh.603667', '五洲新春', '2025-01-01', end_date=current_date),
