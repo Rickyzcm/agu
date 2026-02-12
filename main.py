@@ -133,6 +133,7 @@ gu_list = [
     Stock('sh.600879', '航天电子', '2026-01-17', end_date=current_date),
     Stock('sh.600487', '亨通光电', '2026-01-17', end_date=current_date),
     Stock('sh.603667', '五洲新春', '2026-01-17', end_date=current_date),
+    Stock('sh.603596', '伯特利', '2025-01-01', end_date=current_date),
 
 ]
 
