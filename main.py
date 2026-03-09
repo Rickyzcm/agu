@@ -134,6 +134,12 @@ gu_list = [
     Stock('sh.600487', '亨通光电', '2026-01-17', end_date=current_date),
     Stock('sh.603667', '五洲新春', '2026-01-17', end_date=current_date),
     Stock('sh.603596', '伯特利', '2025-01-01', end_date=current_date),
+    Stock('sh.603212', '赛伍技术', '2025-01-01', end_date=current_date),
+    Stock('sh.603009', '北特科技', '2025-01-01', end_date=current_date),
+    Stock('sz.002414', '高德红外', '2025-01-01', end_date=current_date),
+    Stock('sz.002129', 'TCL中环', '2025-01-01', end_date=current_date),
+    Stock('sz.002006', '精工科技', '2025-01-01', end_date=current_date),
+    Stock('sz.002085', '万丰奥威', '2025-01-01', end_date=current_date),
 
 ]
 
