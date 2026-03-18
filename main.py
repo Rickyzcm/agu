@@ -126,21 +126,39 @@ new_file_path = config.__get_new_file_path__()
 ## 获取当前最新日期
 current_date = datetime.today().strftime("%Y-%m-%d")
 gu_list = [
-    Stock('sz.000099', '中信海直', '2025-01-01', end_date=current_date),
-    Stock('sz.000829', '天音控股', '2025-01-01', end_date=current_date),
-    Stock('sz.001298', '好上好', '2025-01-01', end_date=current_date),
-    Stock('sz.000636', '风华高科', '2025-01-01', end_date=current_date),
-    Stock('sh.600879', '航天电子', '2026-01-17', end_date=current_date),
-    Stock('sh.600487', '亨通光电', '2026-01-17', end_date=current_date),
-    Stock('sh.603667', '五洲新春', '2026-01-17', end_date=current_date),
-    Stock('sh.603596', '伯特利', '2025-01-01', end_date=current_date),
-    Stock('sh.603212', '赛伍技术', '2025-01-01', end_date=current_date),
-    Stock('sh.603009', '北特科技', '2025-01-01', end_date=current_date),
-    Stock('sz.002414', '高德红外', '2025-01-01', end_date=current_date),
-    Stock('sz.002129', 'TCL中环', '2025-01-01', end_date=current_date),
-    Stock('sz.002006', '精工科技', '2025-01-01', end_date=current_date),
-    Stock('sz.002085', '万丰奥威', '2025-01-01', end_date=current_date),
+    # Stock('sz.002006', '精工科技', '2025-01-01', end_date=current_date),
+    # Stock('sh.603667', '五洲新春', '2026-01-17', end_date=current_date),
+    # Stock('sh.603596', '伯特利', '2025-01-01', end_date=current_date),
+    # Stock('sh.603212', '赛伍技术', '2025-01-01', end_date=current_date),
+    # Stock('sh.603009', '北特科技', '2025-01-01', end_date=current_date),
+    # Stock('sz.002414', '高德红外', '2025-01-01', end_date=current_date),
+    # 观察标的
+    # Stock('sz.002129', 'TCL中环', '', end_date=current_date),
+    Stock('sh.600879', '航天电子', '', end_date=current_date),
+    Stock('sz.000818', '航锦科技', '', end_date=current_date),
+    Stock('sz.000988', '华工科技', '', end_date=current_date),
+    Stock('sz.002826', '易明医药', '', end_date=current_date),
+    Stock('sz.002463', '沪电股份', '', end_date=current_date),
+    Stock('sz.000062', '深圳华强', '', end_date=current_date),
 
+    # 观察标的-脑机接口
+    Stock('sz.002173', '创新医疗',start_date='',end_date=current_date),
+    Stock('sh.600775', '南京熊猫',start_date='',end_date=current_date),
+
+    # 观察标的-有色，资源
+    Stock('sh.000603', '盛达资源', start_date='', end_date=current_date),
+
+    # 持有标的
+    Stock('sz.002085', '万丰奥威', '', end_date=current_date),
+    Stock('sh.600487', '亨通光电', '', end_date=current_date),
+    Stock('sh.600875', '东方电气', '', end_date=current_date),
+    Stock('sz.000099', '中信海直', '', end_date=current_date),
+    Stock('sz.000636', '风华高科', '', end_date=current_date),
+    Stock('sh.600362', '江西铜业', '', end_date=current_date),
+    Stock('sh.600406', '国电南瑞', '', end_date=current_date),
+    Stock('sh.600703', '三安光电', '', end_date=current_date),
+    Stock('sh.600703', '准油股份', '', end_date=current_date),
+    Stock('sh.600105', '永鼎股份', '', end_date=current_date),
 ]
 
 #### 获取沪深A股历史K线数据 ####
